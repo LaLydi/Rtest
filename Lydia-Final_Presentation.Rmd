@@ -31,7 +31,7 @@ bc$Malignant.Benign <- as.numeric(bc$Malignant.Benign == 'M')
 
 ## Building decision tree
 ```{r}
-bc_model_1 <- rpart(formula = "Malignant.Benign" ~ ., data = bc, method = "class")
+bc_model_1 <- rpart(formula = Malignant.Benign ~ ., data = bc, method = "class")
 rpart.plot(x = bc_model_1, yesno = 2)
 ```
 
@@ -59,24 +59,24 @@ rpart.plot(x = bc_model, yesno = 2)
 ## Generate prediction from model object
 ```{r}
 class_prediction <- predict(bc_model, newdata = bc_test, type = "class")
-confusionMatrix(class_prediction, bc_test$class)
+confusionMatrix(class_prediction, bc_test$Malignant.Benign)
 ```
 
 ## Comparing models with different splitting criterion
 ```{r}
 # Training gini-based model
-bc_model_gini <- rpart(formula = class ~ ., data = bc_train, method = "class", parms = list(split = "gini"))
+bc_model_gini <- rpart(formula = Malignant.Benign ~ ., data = bc_train, method = "class", parms = list(split = "gini"))
 
 # Training information-based model 
-bc_model_info <- rpart(formula = class ~ ., data = bc_train, method = "class", parms = list(split = "information"))
+bc_model_info <- rpart(formula = Malignant.Benign ~ ., data = bc_train, method = "class", parms = list(split = "information"))
 
 # Generate predictions
 pred_gini <- predict(object = bc_model_gini, newdata = bc_test, type = "class")
 pred_info <- predict(object = bc_model_info, newdata = bc_test, type = "class")
 
 # Compare classification  error
-ce(actual = bc_test$class, predicted = pred_gini)
-ce(actual = bc_test$class, predicted = pred_info)
+ce(actual = bc_test$Malignant.Benign, predicted = pred_gini)
+ce(actual = bc_test$Malignant.Benign, predicted = pred_info)
 ```
 
 ## Generate predicted values on test set and evaluate on AUC
@@ -84,7 +84,7 @@ ce(actual = bc_test$class, predicted = pred_info)
 pred <- predict(object = bc_model, newdata = bc_test, type = "prob")
 
 # Compute AUC
-auc(actual = ifelse(bc_test$class == "2", 1, 0), predicted = pred[, "2"])
+auc(actual = ifelse(bc_test$Malignant.Benign == "1", 1, 0), predicted = pred[, "1"])
 ```
 
 ## Building Neural Network
@@ -131,12 +131,12 @@ for (i in seq(k)){
   e3 <- round(r3$net.result)
   
   # Accuracy from estimates
-  accu1 <- mean(e1 == actual)
-  accu2 <- mean(e2 == actual)
-  accu3 <- mean(e3 == actual)
+  accu1[i] <- mean(e1 == actual)
+  accu2[i] <- mean(e2 == actual)
+  accu3[i] <- mean(e3 == actual)
   
-  accu1
-  accu2
-  accu3
+  accu1[i]
+  accu2[i]
+  accu3[i]
 }
 ```
