@@ -1,9 +1,12 @@
 ---
-title: "Untitled"
+title: "Final Presentation"
 output: html_document
 ---
 
 ## Final Report Presentation
+
+By: Lydia González
+December 4th, 2020
 
 Dataset retrieved from: https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29
 
