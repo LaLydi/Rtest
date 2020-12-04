@@ -1,0 +1,139 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+## Final Report Presentation
+
+Dataset retrieved from: https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29
+
+## Importing libraries
+```{r}
+library(rpart)
+#install.packages("rpart.plot")
+library(rpart.plot)
+library(caret)
+library(Metrics)
+library(nnet)
+library(neuralnet)
+library(NeuralNetTools)
+```
+
+## Importing dataset
+```{r}
+bc <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data", header = TRUE, sep = ",")
+colnames(bc)[2] <- "Malignant.Benign"
+bc$Malignant.Benign <- as.numeric(bc$Malignant.Benign == 'M')
+```
+
+## Building decision tree
+```{r}
+bc_model_1 <- rpart(formula = "Malignant.Benign" ~ ., data = bc, method = "class")
+rpart.plot(x = bc_model_1, yesno = 2)
+```
+
+## Split into training and testing
+```{r}
+# Splitting 80/20
+n <- nrow(bc)
+n_train <- round(0.8 * n)
+set.seed(123)
+train_indices <- sample(1:n, n_train)
+
+# Subsetting training data frame
+bc_train <- bc[train_indices, ]
+
+# Subsetting testing data frame
+bc_test <- bc[-train_indices, ]
+```
+
+## Train model to predict class
+```{r}
+bc_model <- rpart(formula = Malignant.Benign ~ ., data = bc_train, method = "class")
+rpart.plot(x = bc_model, yesno = 2)
+```
+
+## Generate prediction from model object
+```{r}
+class_prediction <- predict(bc_model, newdata = bc_test, type = "class")
+confusionMatrix(class_prediction, bc_test$class)
+```
+
+## Comparing models with different splitting criterion
+```{r}
+# Training gini-based model
+bc_model_gini <- rpart(formula = class ~ ., data = bc_train, method = "class", parms = list(split = "gini"))
+
+# Training information-based model 
+bc_model_info <- rpart(formula = class ~ ., data = bc_train, method = "class", parms = list(split = "information"))
+
+# Generate predictions
+pred_gini <- predict(object = bc_model_gini, newdata = bc_test, type = "class")
+pred_info <- predict(object = bc_model_info, newdata = bc_test, type = "class")
+
+# Compare classification  error
+ce(actual = bc_test$class, predicted = pred_gini)
+ce(actual = bc_test$class, predicted = pred_info)
+```
+
+## Generate predicted values on test set and evaluate on AUC
+```{r}
+pred <- predict(object = bc_model, newdata = bc_test, type = "prob")
+
+# Compute AUC
+auc(actual = ifelse(bc_test$class == "2", 1, 0), predicted = pred[, "2"])
+```
+
+## Building Neural Network
+```{r}
+bc1 <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data", header = TRUE, sep = ",")
+colnames(bc1)[2] <- "Malignant.Benign"
+bc1$Malignant.Benign <- as.numeric(bc$Malignant.Benign == 'M')
+
+# Create k equally sized folds
+k = 10
+folds <- cut(seq(nrow(bc1)), breaks = k, labels = FALSE)
+acc1 <- rep(NA, k) # 1 hidden layer
+acc2 <- rep(NA, k) # 2 hidden layers
+acc3 <- rep(NA, k) # 3 hidden layers
+```
+
+## Create and test all models
+```{r}
+for (i in seq(k)){
+  # Split training and testing
+  test_ind <- which(folds == i, arr.ind = TRUE)
+  bc1_test <- bc1[test_ind, -c(1,2)]
+  bc1_train <- bc1[-test_ind, ]
+  
+  # Actual output
+  actual <- bc1[test_ind, 2]
+  
+  # Create models with training data
+  nn1 <- neuralnet(Malignant.Benign ~ ., bc1_train, hidden = c(30), linear.output = FALSE, 0.000001)
+  nn2 <- neuralnet(Malignant.Benign ~ ., bc1_train, hidden = c(30, 30), linear.output = FALSE, 0.000001)
+  nn3 <- neuralnet(Malignant.Benign ~ ., bc1_train, hidden = c(30, 30, 30), linear.output = FALSE, 0.000001)
+  plotnet(nn1)
+  plotnet(nn2)
+  plotnet(nn3)
+  
+  # Run Neural Network with test data
+  r1 <- compute(nn1, bc1_test)
+  r2 <- compute(nn2, bc1_test)
+  r3 <- compute(nn3, bc1_test)
+  
+  # Estimations of test results
+  e1 <- round(r1$net.result)
+  e2 <- round(r2$net.result)
+  e3 <- round(r3$net.result)
+  
+  # Accuracy from estimates
+  accu1 <- mean(e1 == actual)
+  accu2 <- mean(e2 == actual)
+  accu3 <- mean(e3 == actual)
+  
+  accu1
+  accu2
+  accu3
+}
+```
