@@ -91,7 +91,7 @@ auc(actual = ifelse(bc_test$Malignant.Benign == "1", 1, 0), predicted = pred[, "
 ```{r}
 bc1 <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data", header = TRUE, sep = ",")
 colnames(bc1)[2] <- "Malignant.Benign"
-bc1$Malignant.Benign <- as.numeric(bc$Malignant.Benign == 'M')
+bc1$Malignant.Benign <- as.numeric(bc1$Malignant.Benign == 'M')
 
 # Create k equally sized folds
 k = 10
