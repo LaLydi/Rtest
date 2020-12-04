@@ -96,9 +96,9 @@ bc1$Malignant.Benign <- as.numeric(bc$Malignant.Benign == 'M')
 # Create k equally sized folds
 k = 10
 folds <- cut(seq(nrow(bc1)), breaks = k, labels = FALSE)
-acc1 <- rep(NA, k) # 1 hidden layer
-acc2 <- rep(NA, k) # 2 hidden layers
-acc3 <- rep(NA, k) # 3 hidden layers
+accu1 <- rep(NA, k) # 1 hidden layer
+accu2 <- rep(NA, k) # 2 hidden layers
+accu3 <- rep(NA, k) # 3 hidden layers
 ```
 
 ## Create and test all models
